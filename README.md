@@ -19,7 +19,7 @@ This is a simple FastAPI application that provides an API endpoint for making pr
 To start the application, run the following command:
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 5000
+uvicorn main:app --host 0.0.0.0 --port 5001
 ```
 
 ## Models
