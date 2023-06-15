@@ -10,21 +10,17 @@ class Data(BaseModel):
     data: list
 
 
-def make_prediction(data_frame: pd.DataFrame):
-    # Define the API endpoint for the FastAPI backend
-    api_endpoint = "http://localhost:5001/api/predict/test"  # Modify the URL if needed
-
+def make_prediction(api_endpoint, data_frame):
     # Load the scaler
     numeric_features = list(
         data_frame.select_dtypes(include=[np.number]).columns.values
     )
-
     scaler = RobustScaler()
 
     for col in numeric_features:
         data_frame[[col]] = scaler.fit_transform(data_frame[[col]])
 
-    # Convert dataFrame to dummy variables
+    # Convert DataFrame to dummy variables
     data = pd.get_dummies(data_frame)
 
     # Prepare the request data
@@ -48,61 +44,50 @@ def main():
     st.title("Anchor Installation Time Predict")
     st.header("Input Parameters")
     major_diameter = st.number_input(
-        "Major Diameter (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Major Diameter (in.)", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     minor_diameter = st.number_input(
-        "Minor Diameter (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Minor Diameter (in.)", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     thread_pitch = st.number_input(
-        "Thread Pitch (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Thread Pitch (in.)", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     included_angle = st.number_input(
-        "Included Angle", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Included Angle", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     top_angle = st.number_input(
-        "Top Angle", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Top Angle", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     hole_diameter = st.number_input(
-        "Hole Diameter (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Hole Diameter (in.)", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     serration_threads = st.radio(
         "Have Serration Threads", options=[False, True], index=False
     )
-    if serration_threads:
-        serration_threads = 1
-    else:
-        serration_threads = 0
+    serration_threads = int(serration_threads)  # Convert to int
     length_B = st.number_input(
-        "Total length (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Total length (in.)", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     length_C = st.number_input(
-        "Thread length (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Thread length (in.)", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     embedment_depth = st.number_input(
-        "Embedment Depth (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Embedment Depth (in.)", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     tip_taper = st.number_input(
-        "Tip Taper", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Tip Taper", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     shank_diameter = st.number_input(
-        "Shank Diameter (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+        "Shank Diameter (in.)", min_value=0.0, value=0.0, format="%.4f", step=1e-4
     )
     torque_tool = st.selectbox("Torque Tool", options=["Low", "Medium", "High"])
-    if torque_tool == "Low":
-        torque_tool = 225
-    elif torque_tool == "Medium":
-        torque_tool = 300
-    else:
-        torque_tool = 500
+    torque_values = {"Low": 225, "Medium": 300, "High": 500}
+    torque_tool = torque_values.get(torque_tool, 225)  # Default to Low torque
     concrete = st.radio("Concrete", options=["Texas", "West Chicago"])
-    if concrete == "Texas":
-        concrete_tx = 1
-        concrete_wc = 0
-    else:
-        concrete_tx = 0
-        concrete_wc = 1
+    concrete_values = {"Texas": (1, 0), "West Chicago": (0, 1)}
+    concrete_tx, concrete_wc = concrete_values.get(concrete, (1, 0))  # Default to Texas
 
-    input = {
+    input_data = {
         "major_diameter": major_diameter,
         "minor_diameter": minor_diameter,
         "thread_pitch": thread_pitch,
@@ -120,18 +105,19 @@ def main():
         "concrete_wc": concrete_wc,
     }
 
-    # Input conversion to DataFrame
-    data_frame = pd.DataFrame([input])
+    data_frame = pd.DataFrame([input_data])
 
     if st.button("Predict"):
-        predictions = make_prediction(data_frame)
+        api_endpoint = (
+            "http://localhost:5001/api/predict/test"  # Modify the URL if needed
+        )
+        predictions = make_prediction(api_endpoint, data_frame)
         st.header("Predictions:")
 
         # Create a table to display the predictions
-        table_data = []
-        for model_name, prediction in predictions.items():
-            table_data.append([model_name, prediction])
-
+        table_data = [
+            [model_name, prediction] for model_name, prediction in predictions.items()
+        ]
         table_df = pd.DataFrame(table_data, columns=["Model", "Prediction"])
         st.table(table_df)
 
