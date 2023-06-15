@@ -47,12 +47,24 @@ def make_prediction(data_frame: pd.DataFrame):
 def main():
     st.title("Anchor Installation Time Predict")
     st.header("Input Parameters")
-    major_diameter = st.number_input("Major Diameter (in.)", value=0.0)
-    minor_diameter = st.number_input("Minor Diameter (in.)", value=0.0)
-    thread_pitch = st.number_input("Thread Pitch (in.)", value=0.0)
-    included_angle = st.number_input("Included Angle", value=0.0)
-    top_angle = st.number_input("Top Angle", value=0.0)
-    hole_diameter = st.number_input("Hole Diameter (in.)", value=0.0)
+    major_diameter = st.number_input(
+        "Major Diameter (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    minor_diameter = st.number_input(
+        "Minor Diameter (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    thread_pitch = st.number_input(
+        "Thread Pitch (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    included_angle = st.number_input(
+        "Included Angle", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    top_angle = st.number_input(
+        "Top Angle", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    hole_diameter = st.number_input(
+        "Hole Diameter (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
     serration_threads = st.radio(
         "Have Serration Threads", options=[False, True], index=False
     )
@@ -60,11 +72,21 @@ def main():
         serration_threads = 1
     else:
         serration_threads = 0
-    length_B = st.number_input("Total length (in.)", value=0.0)
-    length_C = st.number_input("Thread length (in.)", value=0.0)
-    embedment_depth = st.number_input("Embedment Depth (in.)", value=0.0)
-    tip_taper = st.number_input("Tip Taper", value=0.0)
-    shank_diameter = st.number_input("Shank Diameter (in.)", value=0.0)
+    length_B = st.number_input(
+        "Total length (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    length_C = st.number_input(
+        "Thread length (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    embedment_depth = st.number_input(
+        "Embedment Depth (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    tip_taper = st.number_input(
+        "Tip Taper", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
+    shank_diameter = st.number_input(
+        "Shank Diameter (in.)", min_value=0.0, value=0.0, format="%.5f", step=0.0001
+    )
     torque_tool = st.selectbox("Torque Tool", options=["Low", "Medium", "High"])
     if torque_tool == "Low":
         torque_tool = 225
