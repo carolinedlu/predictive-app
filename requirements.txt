@@ -7,3 +7,6 @@ catboost==1.2
 lightgbm==3.3.5
 mlxtend==0.22.0
 xgboost==1.7.5
+doit==0.36.0
+streamlit==1.23.1
+requests==2.31.0

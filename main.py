@@ -23,7 +23,7 @@ class Data(BaseModel):
     data: list
 
 
-@app.post("/api/predict/test")
+@app.post("/api/predict/test")  # Modify the API endpoint if needed
 def predict(data: Data):
     # Reshape the input data
     X = np.array(data.data).reshape(1, -1)

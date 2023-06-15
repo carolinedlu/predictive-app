@@ -11,15 +11,25 @@ This is a simple FastAPI application that provides an API endpoint for making pr
 2. Install the required dependencies:
 
    ```bash
+   python -m venv venv
+   .\\venv\\Scripts\\activate
    pip install -r requirements.txt
    ```
 
 ## Start the application
 
-To start the application, run the following command:
+To start the application, run the following commands:
+
+Start the backend:
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 5001
+doit start_backend
+```
+
+Start the streamlit demo web application (Make sure the backend is running first):
+
+```bash
+doit start_frontend
 ```
 
 ## Models
