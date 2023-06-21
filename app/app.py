@@ -83,9 +83,9 @@ def main():
     torque_tool = st.selectbox("Torque Tool", options=["Low", "Medium", "High"])
     torque_values = {"Low": 225, "Medium": 300, "High": 500}
     torque_tool = torque_values.get(torque_tool, 225)  # Default to Low torque
-    concrete = st.radio("Concrete", options=["Texas", "West Chicago"])
-    concrete_values = {"Texas": (1, 0), "West Chicago": (0, 1)}
-    concrete_tx, concrete_wc = concrete_values.get(concrete, (1, 0))  # Default to Texas
+    # concrete = st.radio("Concrete", options=["Texas", "West Chicago"])
+    # concrete_values = {"Texas": (1, 0), "West Chicago": (0, 1)}
+    # concrete_tx, concrete_wc = concrete_values.get(concrete, (1, 0))  # Default to Texas
 
     input_data = {
         "major_diameter": major_diameter,
@@ -101,8 +101,8 @@ def main():
         "tip_taper": tip_taper,
         "shank_diameter": shank_diameter,
         "torque_tool": torque_tool,
-        "concrete_tx": concrete_tx,
-        "concrete_wc": concrete_wc,
+        # "concrete_tx": concrete_tx,
+        # "concrete_wc": concrete_wc,
     }
 
     data_frame = pd.DataFrame([input_data])
@@ -118,7 +118,9 @@ def main():
         table_data = [
             [model_name, prediction] for model_name, prediction in predictions.items()
         ]
-        table_df = pd.DataFrame(table_data, columns=["Model", "Prediction"])
+        table_df = pd.DataFrame(
+            table_data, columns=["Model", "Installing time prediction"]
+        )
         st.table(table_df)
 
 

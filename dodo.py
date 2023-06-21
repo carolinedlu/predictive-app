@@ -4,7 +4,9 @@ import doit
 def task_start_backend():
     """Start the FastAPI backend server"""
     return {
-        "actions": ["cd api && uvicorn main:app --reload --host 0.0.0.0 --port 5001"],
+        "actions": [
+            ".\\venv\\Scripts\\activate && cd api && uvicorn main:app --reload --host 0.0.0.0 --port 5001"
+        ],
         "verbosity": 2,
         "params": [
             {
@@ -28,7 +30,9 @@ def task_start_backend():
 def task_start_frontend():
     """Start the Streamlit frontend"""
     return {
-        "actions": ["cd app & streamlit run app.py --server.port=8051"],
+        "actions": [
+            " .\\venv\\Scripts\\activate && cd app && streamlit run app.py --server.port=8051"
+        ],
         "verbosity": 2,
         "params": [
             {
