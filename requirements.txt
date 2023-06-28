@@ -9,4 +9,6 @@ mlxtend==0.22.0
 xgboost==1.7.5
 doit==0.36.0
 streamlit==1.23.1
+streamlit-shap==1.0.2
 requests==2.31.0
+ipython==8.14.9

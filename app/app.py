@@ -1,14 +1,28 @@
+import warnings
+from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+
+warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
+warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
+
+import os
 import requests
 import streamlit as st
 import pandas as pd
 from pydantic import BaseModel
 from sklearn.preprocessing import RobustScaler
 import numpy as np
-
+import shap
+import joblib
+from streamlit_shap import st_shap
 
 class Data(BaseModel):
     data: list
 
+# Load the selected model
+def load_model(model_name):
+    model_path = os.path.join("..", "api", "model", f"{model_name}.joblib")
+    model = joblib.load(model_path)
+    return model
 
 def make_prediction(api_endpoint, data_frame):
     # Load the scaler
@@ -31,12 +45,18 @@ def make_prediction(api_endpoint, data_frame):
     try:
         # Send a POST request to the API endpoint
         response = requests.post(api_endpoint, json=request_data)
-        response.raise_for_status()  # Raise an exception for HTTP errors
-        # Parse the response as JSON
-        predictions = response.json()["predictions"]
-        return predictions
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error occurred: {e}")
+
+        if response.status_code == 200:
+            # Parse the response as JSON
+            predictions = response.json()["predictions"]
+            return predictions
+        else:
+            error_message = response.json()["detail"]
+            st.error(f"Error: {error_message}")
+    except requests.exceptions.ConnectionError:
+        st.error("Error: Failed to establish a connection to the prediction API.")
+    except Exception as e:
+        st.error(f"Error making prediction: {str(e)}")
         return None
 
 
@@ -105,24 +125,64 @@ def main():
         # "concrete_wc": concrete_wc,
     }
 
+    # Check if any input value is zero or empty
+    if (
+        major_diameter == 0.0
+        or minor_diameter == 0.0
+        or thread_pitch == 0.0
+        or included_angle == 0.0
+        or top_angle == 0.0
+        or hole_diameter == 0.0
+        or length_B == 0.0
+        or length_C == 0.0
+        or embedment_depth == 0.0
+        or tip_taper == 0.0
+        or shank_diameter == 0.0
+    ):
+        st.error("Error: Please fill in all the input fields.")
+        return
+
     data_frame = pd.DataFrame([input_data])
 
-    if st.button("Predict"):
+    show_results = st.checkbox("Show Models' results")
+
+    if show_results:
         api_endpoint = (
             "http://localhost:5001/api/predict/test"  # Modify the URL if needed
         )
         predictions = make_prediction(api_endpoint, data_frame)
-        st.header("Predictions:")
 
-        # Create a table to display the predictions
-        table_data = [
-            [model_name, prediction] for model_name, prediction in predictions.items()
-        ]
-        table_df = pd.DataFrame(
-            table_data, columns=["Model", "Installing time prediction"]
-        )
-        st.table(table_df)
+        if predictions is not None:
+            st.header("Predictions:")
 
+            # Create a table to display the predictions
+            table_data = []
+            for model_name, prediction in predictions.items():
+                table_data.append([model_name, prediction])
+
+            table_df = pd.DataFrame(
+                table_data, columns=["Model", "Installing time prediction"]
+            )
+
+            # Display the table
+            st.table(table_df)
+
+            # Create a radio button or selectbox for users to select a model
+            model_options = list(predictions.keys())
+            selected_model = st.radio("Select a model to generate SHAP plot:", model_options)
+
+            if st.button(f"Generate SHAP plot for {selected_model}"):
+                # Load the selected model from the selected_model
+                model = load_model(selected_model)
+                # Generate the SHAP plot for the selected model
+                explainer = shap.Explainer(model)
+                shap_values = explainer(data_frame)
+
+                # Create an Explanation object from the returned SHAP values
+                explanation = shap.Explanation(values=shap_values.values, data=data_frame)
+
+                # Display the SHAP plot using streamlit_shap
+                st_shap(explanation)
 
 if __name__ == "__main__":
     main()

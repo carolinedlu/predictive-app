@@ -1,14 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
 import numpy as np
 import os
-from error_handler import (
-    BadRequestError,
-    handle_bad_request_error,
-    NotFoundError,
-    handle_not_found_error,
-)
 
 app = FastAPI()
 
@@ -21,42 +15,34 @@ for filename in os.listdir(model_directory):
     if filename.endswith(".joblib"):
         model_name = os.path.splitext(filename)[0]
         model_path = os.path.join(model_directory, filename)
-        model = joblib.load(model_path)
-        models[model_name] = model
-
-if not models:
-    raise NotFoundError("Not found any models")
-
+        try:
+            model = joblib.load(model_path)
+            models[model_name] = model
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error loading model: {model_name} - {str(e)}")
 
 class Data(BaseModel):
     data: list
 
-
-@app.exception_handler(BadRequestError)
-async def handle_bad_request(request, exc):
-    return await handle_bad_request_error(request, exc)
-
-
-@app.exception_handler(NotFoundError)
-async def handle_not_found(request, exc):
-    return await handle_not_found_error(request, exc)
-
-
 @app.post("/api/predict/test")
 def predict(data: Data):
-    try:
-        # Reshape the input data
-        X = np.array(data.data).reshape(1, -1)
+    # Check if the specified model exists
+    if not models:
+        raise HTTPException(status_code=500, detail="Models not found")
+    # Reshape the input data
+    X = np.array(data.data).reshape(1, -1)
 
-        # Predict and store the results for each model
-        predictions = {}
-        for model_name, model in models.items():
+    # Predict and store the results for each model
+    predictions = {}
+
+    for model_name, model in models.items():
+        try:
             prediction = model.predict(X)
             prediction = np.expm1(prediction)
             predictions[model_name] = f"{prediction[0]:.6f} seconds"
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error predicting with model: {model_name} - {str(e)}")
 
-        # Format the prediction response as JSON
-        response = {"predictions": predictions}
-        return response
-    except Exception as e:
-        raise BadRequestError("Invalid request data.")
+    # Format the prediction response as JSON
+    response = {"predictions": predictions}
+    return response
