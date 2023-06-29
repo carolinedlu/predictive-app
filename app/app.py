@@ -9,7 +9,7 @@ import requests
 import streamlit as st
 import pandas as pd
 from pydantic import BaseModel
-from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import RobustScaler, StandardScaler
 import numpy as np
 import shap
 import joblib
@@ -24,18 +24,25 @@ def load_model(model_name):
     model = joblib.load(model_path)
     return model
 
-def make_prediction(api_endpoint, data_frame):
+def preprocess_data(data_frame):
+    st.write(data_frame)
     # Load the scaler
     numeric_features = list(
         data_frame.select_dtypes(include=[np.number]).columns.values
     )
     scaler = RobustScaler()
-
+    
     for col in numeric_features:
         data_frame[[col]] = scaler.fit_transform(data_frame[[col]])
-
+    # st.write(data_frame)
     # Convert DataFrame to dummy variables
     data = pd.get_dummies(data_frame)
+    st.write(data)
+    return data
+
+def make_prediction(api_endpoint, data_frame):
+    data = preprocess_data(data_frame)
+    # st.write(data)
 
     # Prepare the request data
     request_data = {
@@ -136,13 +143,14 @@ def main():
         or length_B == 0.0
         or length_C == 0.0
         or embedment_depth == 0.0
-        or tip_taper == 0.0
+        # or tip_taper == 0.0
         or shank_diameter == 0.0
     ):
         st.error("Error: Please fill in all the input fields.")
         return
 
     data_frame = pd.DataFrame([input_data])
+    # st.write(data_frame)
 
     show_results = st.checkbox("Show Models' results")
 
@@ -175,14 +183,15 @@ def main():
                 # Load the selected model from the selected_model
                 model = load_model(selected_model)
                 # Generate the SHAP plot for the selected model
-                explainer = shap.Explainer(model)
-                shap_values = explainer(data_frame)
+                explainer = shap.TreeExplainer(model)
 
-                # Create an Explanation object from the returned SHAP values
-                explanation = shap.Explanation(values=shap_values.values, data=data_frame)
+                data = preprocess_data(data_frame)
 
-                # Display the SHAP plot using streamlit_shap
-                st_shap(explanation)
+                shap_values = explainer(data)
+                # st.write(shap_values)
+
+                st_shap(shap.plots.waterfall(shap_values[0], max_display=20), height=600)
+
 
 if __name__ == "__main__":
     main()
