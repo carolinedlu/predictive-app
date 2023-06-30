@@ -5,68 +5,45 @@ warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
 warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
 
 import os
-import requests
+import numpy as np
 import streamlit as st
 import pandas as pd
 from pydantic import BaseModel
 import shap
 import joblib
 from streamlit_shap import st_shap
+from model_loader import load_models, load_model
+
+models = load_models()
 
 
 class Data(BaseModel):
     data: list
 
 
-# Load the selected model
-def load_model(model_name):
-    model_path = os.path.join("..", "api", "model", f"{model_name}.joblib")
-    model = joblib.load(model_path)
-    return model
-
-
 def preprocess_data(data_frame):
-    # st.write(data_frame)
-    # Load the scaler
-    # numeric_features = list(
-    #     data_frame.select_dtypes(include=[np.number]).columns.values
-    # )
-    # scaler = RobustScaler()
-
-    # for col in numeric_features:
-    #     data_frame[[col]] = scaler.fit_transform(data_frame[[col]])
-    # st.write(data_frame)
     # Convert DataFrame to dummy variables
     data = pd.get_dummies(data_frame)
-    # st.write(data)
     return data
 
 
-def make_prediction(api_endpoint, data_frame):
+def make_prediction(data_frame):
     data = preprocess_data(data_frame)
-    # st.write(data)
 
-    # Prepare the request data
-    request_data = {
-        "data": data.values.tolist()
-    }  # Convert the DataFrame to a nested list
+    X = np.array(data).reshape(1, -1)
 
-    try:
-        # Send a POST request to the API endpoint
-        response = requests.post(api_endpoint, json=request_data)
+    predictions = {}
 
-        if response.status_code == 200:
-            # Parse the response as JSON
-            predictions = response.json()["predictions"]
+    for model_name, model in models.items():
+        try:
+            prediction = model.predict(X)
+            prediction = np.expm1(prediction)
+            predictions[model_name] = f"{prediction[0]:.6f} seconds"
             return predictions
-        else:
-            error_message = response.json()["detail"]
-            st.error(f"Error: {error_message}")
-    except requests.exceptions.ConnectionError:
-        st.error("Error: Failed to establish a connection to the prediction API.")
-    except Exception as e:
-        st.error(f"Error making prediction: {str(e)}")
-        return None
+        except Exception as e:
+            st.error(f"Error predicting with model: {model_name} - {str(e)}")
+
+    return None
 
 
 def main():
@@ -157,10 +134,7 @@ def main():
     show_results = st.checkbox("Show Models' results")
 
     if show_results:
-        api_endpoint = (
-            "http://localhost:5001/api/predict/test"  # Modify the URL if needed
-        )
-        predictions = make_prediction(api_endpoint, data_frame)
+        predictions = make_prediction(data_frame)
 
         if predictions is not None:
             st.header("Predictions:")

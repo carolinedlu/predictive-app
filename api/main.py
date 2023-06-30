@@ -1,27 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import joblib
 import numpy as np
-import os
+import sys
+
+sys.path.append("../app")  # Add the "app" directory to the Python path
+from model_loader import load_models
 
 app = FastAPI()
 
-# Specify the directory where the models are stored
-model_directory = "model"
-
-# Load all models from the model directory
-models = {}
-for filename in os.listdir(model_directory):
-    if filename.endswith(".joblib"):
-        model_name = os.path.splitext(filename)[0]
-        model_path = os.path.join(model_directory, filename)
-        try:
-            model = joblib.load(model_path)
-            models[model_name] = model
-        except Exception as e:
-            raise HTTPException(
-                status_code=500, detail=f"Error loading model: {model_name} - {str(e)}"
-            )
+models = load_models()
 
 
 class Data(BaseModel):
