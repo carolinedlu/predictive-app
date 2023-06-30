@@ -9,14 +9,14 @@ import requests
 import streamlit as st
 import pandas as pd
 from pydantic import BaseModel
-from sklearn.preprocessing import RobustScaler, StandardScaler
-import numpy as np
 import shap
 import joblib
 from streamlit_shap import st_shap
 
+
 class Data(BaseModel):
     data: list
+
 
 # Load the selected model
 def load_model(model_name):
@@ -24,21 +24,23 @@ def load_model(model_name):
     model = joblib.load(model_path)
     return model
 
+
 def preprocess_data(data_frame):
-    st.write(data_frame)
+    # st.write(data_frame)
     # Load the scaler
-    numeric_features = list(
-        data_frame.select_dtypes(include=[np.number]).columns.values
-    )
-    scaler = RobustScaler()
-    
-    for col in numeric_features:
-        data_frame[[col]] = scaler.fit_transform(data_frame[[col]])
+    # numeric_features = list(
+    #     data_frame.select_dtypes(include=[np.number]).columns.values
+    # )
+    # scaler = RobustScaler()
+
+    # for col in numeric_features:
+    #     data_frame[[col]] = scaler.fit_transform(data_frame[[col]])
     # st.write(data_frame)
     # Convert DataFrame to dummy variables
     data = pd.get_dummies(data_frame)
-    st.write(data)
+    # st.write(data)
     return data
+
 
 def make_prediction(api_endpoint, data_frame):
     data = preprocess_data(data_frame)
@@ -177,7 +179,9 @@ def main():
 
             # Create a radio button or selectbox for users to select a model
             model_options = list(predictions.keys())
-            selected_model = st.radio("Select a model to generate SHAP plot:", model_options)
+            selected_model = st.radio(
+                "Select a model to generate SHAP plot:", model_options
+            )
 
             if st.button(f"Generate SHAP plot for {selected_model}"):
                 # Load the selected model from the selected_model
@@ -190,7 +194,10 @@ def main():
                 shap_values = explainer(data)
                 # st.write(shap_values)
 
-                st_shap(shap.plots.waterfall(shap_values[0], max_display=20), height=600)
+                # Show the SHAP plot
+                st_shap(
+                    shap.plots.waterfall(shap_values[0], max_display=20), height=600
+                )
 
 
 if __name__ == "__main__":

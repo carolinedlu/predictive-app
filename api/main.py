@@ -19,10 +19,14 @@ for filename in os.listdir(model_directory):
             model = joblib.load(model_path)
             models[model_name] = model
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error loading model: {model_name} - {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Error loading model: {model_name} - {str(e)}"
+            )
+
 
 class Data(BaseModel):
     data: list
+
 
 @app.post("/api/predict/test")
 def predict(data: Data):
@@ -41,7 +45,10 @@ def predict(data: Data):
             prediction = np.expm1(prediction)
             predictions[model_name] = f"{prediction[0]:.6f} seconds"
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error predicting with model: {model_name} - {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error predicting with model: {model_name} - {str(e)}",
+            )
 
     # Format the prediction response as JSON
     response = {"predictions": predictions}
