@@ -4,21 +4,19 @@ from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWa
 warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
 warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
 
-import os
 import numpy as np
 import streamlit as st
 import pandas as pd
 from pydantic import BaseModel
 import shap
-import joblib
 from streamlit_shap import st_shap
 from model_loader import load_models, load_model
 
 models = load_models()
 
 
-class Data(BaseModel):
-    data: list
+# class Data(BaseModel):
+#     data: list
 
 
 def preprocess_data(data_frame):
@@ -27,6 +25,7 @@ def preprocess_data(data_frame):
     return data
 
 
+@st.cache_data
 def make_prediction(data_frame):
     data = preprocess_data(data_frame)
 
@@ -129,9 +128,9 @@ def main():
         return
 
     data_frame = pd.DataFrame([input_data])
-    # st.write(data_frame)
 
     show_results = st.checkbox("Show Models' results")
+    selected_model = None
 
     if show_results:
         predictions = make_prediction(data_frame)
@@ -157,21 +156,22 @@ def main():
                 "Select a model to generate SHAP plot:", model_options
             )
 
-            if st.button(f"Generate SHAP plot for {selected_model}"):
-                # Load the selected model from the selected_model
-                model = load_model(selected_model)
-                # Generate the SHAP plot for the selected model
-                explainer = shap.TreeExplainer(model)
+    generate_shap_plot = st.checkbox(f"Generate SHAP plot for {selected_model}")
 
-                data = preprocess_data(data_frame)
+    if generate_shap_plot:
+        if selected_model is not None:
+            # Load the selected model from the selected_model
+            model = load_model(selected_model)
+            # Generate the SHAP plot for the selected model
+            explainer = shap.TreeExplainer(model)
 
-                shap_values = explainer(data)
-                # st.write(shap_values)
+            data = preprocess_data(data_frame)
 
-                # Show the SHAP plot
-                st_shap(
-                    shap.plots.waterfall(shap_values[0], max_display=20), height=600
-                )
+            shap_values = explainer(data)
+            # st.write(shap_values)
+
+            # Show the SHAP plot
+            st_shap(shap.plots.waterfall(shap_values[0], max_display=20), height=600)
 
 
 if __name__ == "__main__":
