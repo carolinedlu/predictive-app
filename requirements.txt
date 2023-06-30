@@ -1,9 +1,15 @@
 fastapi==0.97.0
 uvicorn==0.22.0
-numpy==1.24.3
+numpy==1.23.5
+shap==0.41.0
 scikit-learn==1.2.2
 joblib==1.2.0
 catboost==1.2
 lightgbm==3.3.5
 mlxtend==0.22.0
 xgboost==1.7.5
+doit==0.36.0
+streamlit==1.23.1
+streamlit-shap==1.0.2
+requests==2.31.0
+ipython==8.14.9
