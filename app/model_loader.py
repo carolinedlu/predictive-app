@@ -2,7 +2,7 @@ import joblib
 import os
 
 # Specify the directory where the models are stored
-model_directory = "./model"
+model_directory = "./model"  # Change to "../model" if run on local machine
 
 
 def load_models():
