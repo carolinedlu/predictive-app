@@ -14,8 +14,9 @@ from streamlit_shap import st_shap
 
 from predict import make_prediction, preprocess_data
 
-sys.path.append(os.path.abspath(os.path.join("..", "model")))
-from model_loader import load_model
+# sys.path.append(os.path.abspath(os.path.join("..", "model")))
+
+from model_loader import *
 
 statistics_path = os.path.join("statistics.json")
 
