@@ -14,4 +14,3 @@ streamlit-shap==1.0.2
 requests==2.31.0
 ipython==8.14.0
 openpyxl==3.1.2
-```
