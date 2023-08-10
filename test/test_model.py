@@ -1,14 +1,14 @@
 import sys
 import os
 
+sys.path.append(os.path.abspath(os.path.join("..", "app")))
 sys.path.append(os.path.abspath(os.path.join("..", "model")))
 import numpy as np
+from predict import preprocess_data
 from model_loader import load_models
 import pandas as pd
-import json
 
-f = open("statistics.json")
-statistics = json.load(f)
+statistics_path = os.path.join("..", "app", "statistics.json")
 
 
 def load_data(excel_file_path, num_features):
@@ -17,23 +17,6 @@ def load_data(excel_file_path, num_features):
         return data
     except Exception as e:
         raise RuntimeError(f"Error loading data from Excel: {str(e)}")
-
-
-def standardize_data(data, statistics):
-    try:
-        for column in data.columns:
-            if column in statistics:
-                if isinstance(data[column].dtype, (np.number, np.bool_)):
-                    data[column] = (data[column] - statistics[column]["median"]) / (
-                        statistics[column]["q75"] - statistics[column]["q25"]
-                    )
-            else:
-                print(f"Skipping standardization for '{column}' column")
-
-        return data
-
-    except Exception as e:
-        raise RuntimeError(f"Error standardizing data: {str(e)}")
 
 
 def model_number_features(model):
@@ -49,9 +32,7 @@ def main():
     for model_name, chosen_model in models.items():
         num_features = model_number_features(chosen_model)
         data = load_data(xlsx_file_path, num_features)
-        standardized_data = standardize_data(
-            data.copy(), statistics
-        )  # Make a copy of the data
+        standardized_data = preprocess_data(data.copy(), statistics_path)
         sample_data = standardized_data.to_numpy()
 
         try:
