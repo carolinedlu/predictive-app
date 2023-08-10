@@ -1,5 +1,4 @@
 import os
-import sys
 
 import warnings
 from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
@@ -16,7 +15,7 @@ from predict import make_prediction, preprocess_data
 
 # sys.path.append(os.path.abspath(os.path.join("..", "model")))
 
-from model_loader import *
+from model_loader import load_model
 
 statistics_path = os.path.join("statistics.json")
 
