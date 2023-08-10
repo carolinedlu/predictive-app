@@ -3,8 +3,7 @@ import sys
 import os
 import json
 
-sys.path.append(os.path.abspath(os.path.join("..", "model")))
-from model_loader import load_models
+from model_loader import *
 
 models = load_models(os.path.join("..", "model"))
 
