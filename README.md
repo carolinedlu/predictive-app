@@ -20,31 +20,20 @@ This is a simple FastAPI application that provides an API endpoint for making pr
 
 To start the application, run the following commands:
 
-Start the backend:
+Start the api:
 
 ```bash
-doit start_backend
+doit start_api
 ```
 
-Start the streamlit demo web application (Make sure the backend is running first):
+Start the streamlit demo web application
 
 ```bash
-doit start_frontend
+doit start_streamlit
 ```
 
 ## Models
 
 The application loads pre-trained models from the `model` directory. Currently, the following models are available:
 
-- CatBoost Regressor
-- Decision Tree Regressor
-- Gradient Boosting Regressor
-- K-Nearest Regressor
-- LightGBM Regressor
 - XGBoost Regressor
-- XGBoost Optimized Regressor
-- Lasso
-- Linear Regression
-- Random Forest
-- Stacking Regressor
-- Support Vector Regressor

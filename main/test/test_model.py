@@ -4,8 +4,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join("..", "app")))
 sys.path.append(os.path.abspath(os.path.join("..", "model")))
 import numpy as np
-from predict import preprocess_data
-from model_loader import load_models
+from main.app.predict import preprocess_data
+from main.model.model_loader import load_models
 import pandas as pd
 
 statistics_path = os.path.join("..", "app", "statistics.json")

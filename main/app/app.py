@@ -15,7 +15,7 @@ from predict import make_prediction, preprocess_data
 
 # sys.path.append(os.path.abspath(os.path.join("..", "model")))
 
-from model_loader import load_model
+from main.model.model_loader import load_model
 
 statistics_path = os.path.join("statistics.json")
 

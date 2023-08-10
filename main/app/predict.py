@@ -2,7 +2,7 @@ import numpy as np
 import os
 import json
 
-from model_loader import load_models
+from main.model.model_loader import load_models
 
 
 models = load_models(os.path.join("..", "model"))
