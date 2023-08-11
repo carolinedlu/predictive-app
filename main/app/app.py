@@ -45,7 +45,7 @@ def load_model(model_path):
     return model
 
 
-models = load_models(os.path.join("..", "model"))
+models = load_models(os.path.join(".", "model"))
 
 statistics_path = os.path.join("statistics.json")
 
