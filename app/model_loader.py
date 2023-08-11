@@ -1,14 +1,16 @@
 import joblib
 import os
 
+path = os.getcwd()
 
-def load_models(model_dir):
+
+def load_models():
     # Load all models from the model directory
     models = {}
-    for filename in os.listdir(model_dir):
+    for filename in os.listdir(path):
         if filename.endswith(".joblib"):
             model_name = os.path.splitext(filename)[0]
-            model_path = os.path.join(model_dir, filename)
+            model_path = os.path.join(path, filename)
             try:
                 model = joblib.load(model_path)
                 models[model_name] = model

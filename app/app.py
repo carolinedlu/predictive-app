@@ -15,13 +15,13 @@ from predict import make_prediction, preprocess_data
 
 # sys.path.append(os.path.abspath(os.path.join("..", "model")))
 
-from model.model_loader import load_model
+from model_loader import load_model
 
 statistics_path = os.path.join("statistics.json")
 
 
 def generate_shap_plot(model_name, data):
-    model_path = os.path.join("model", f"{model_name}.joblib")
+    model_path = os.path.join(f"{model_name}.joblib")
     # Load the selected model from the selected_model
     model = load_model(model_path)
     # Generate the SHAP plot for the selected model

@@ -2,10 +2,10 @@ import numpy as np
 import os
 import json
 
-from model.model_loader import load_models
+from model_loader import load_models
 
 
-models = load_models(os.path.join("models"))
+models = load_models()
 
 
 def preprocess_data(data_frame, statistics_path):
