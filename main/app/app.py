@@ -45,8 +45,6 @@ def load_model(model_path):
     return model
 
 
-models = load_models("./model")
-
 statistics_path = os.path.join("statistics.json")
 
 
@@ -72,6 +70,10 @@ def preprocess_data(data_frame, statistics_path):
         return data
     except Exception as e:
         raise RuntimeError(f"Error preprocessing data: {str(e)}")
+
+
+model_directory = "./model"
+models = load_models(model_directory)
 
 
 class PredictionError(Exception):
