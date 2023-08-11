@@ -5,7 +5,7 @@ import json
 from model.model_loader import load_models
 
 
-models = load_models(os.path.join("..", "model"))
+models = load_models("model")
 
 
 def preprocess_data(data_frame, statistics_path):

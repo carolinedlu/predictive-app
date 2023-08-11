@@ -5,7 +5,7 @@ def task_start_api():
     """Start the FastAPI backend server"""
     return {
         "actions": [
-            ".\\venv\\Scripts\\activate && cd main/api && uvicorn api:app --reload --host 0.0.0.0 --port 5001"
+            ".\\venv\\Scripts\\activate && cd api && uvicorn api:app --reload --host 0.0.0.0 --port 5001"
         ],
         "verbosity": 2,
         "params": [
@@ -31,7 +31,7 @@ def task_start_streamlit():
     """Start the Streamlit"""
     return {
         "actions": [
-            " .\\venv\\Scripts\\activate && cd main/app && streamlit run app.py --server.port=8051"
+            " .\\venv\\Scripts\\activate && cd app && streamlit run app.py --server.port=8051"
         ],
         "verbosity": 2,
         "params": [
