@@ -10,14 +10,94 @@ import streamlit as st
 import pandas as pd
 import shap
 from streamlit_shap import st_shap
+import numpy as np
+import json
+import joblib
 
-from predict import make_prediction, preprocess_data
+# from predict import make_prediction, preprocess_data
 
 # sys.path.append(os.path.abspath(os.path.join("..", "model")))
 
-from main.model.model_loader import load_model
+# from main.model.model_loader import load_model
+
+
+def load_models(model_dir):
+    # Load all models from the model directory
+    models = {}
+    for filename in os.listdir(model_dir):
+        if filename.endswith(".joblib"):
+            model_name = os.path.splitext(filename)[0]
+            model_path = os.path.join(model_dir, filename)
+            try:
+                model = joblib.load(model_path)
+                models[model_name] = model
+            except Exception as e:
+                raise RuntimeError(f"Error loading model: {model_name} - {str(e)}")
+
+    if not models:
+        raise RuntimeError("Models not found")
+
+    return models
+
+
+def load_model(model_path):
+    model = joblib.load(model_path)
+    return model
+
+
+models = load_models(os.path.join("..", "model"))
 
 statistics_path = os.path.join("statistics.json")
+
+
+def preprocess_data(data_frame, statistics_path):
+    with open(statistics_path) as f:
+        statistics = json.load(f)
+
+    try:
+        data = data_frame.copy()
+
+        for column in data.columns:
+            # print(data[column].dtype)
+            if column in statistics:
+                if data[column].dtype == np.float64 or data[column].dtype == np.int64:
+                    data[column] = (data[column] - statistics[column]["median"]) / (
+                        statistics[column]["q75"] - statistics[column]["q25"]
+                    )
+            else:
+                print(f"Skipping standardization for '{column}' column")
+
+        print(data)
+
+        return data
+    except Exception as e:
+        raise RuntimeError(f"Error preprocessing data: {str(e)}")
+
+
+class PredictionError(Exception):
+    def __init__(self, model_name, original_exception):
+        self.model_name = model_name
+        self.original_exception = original_exception
+        super().__init__(
+            f"Error predicting with model: {model_name} - {str(original_exception)}"
+        )
+
+
+def make_prediction(data_frame):
+    data = preprocess_data(data_frame, os.path.join("statistics.json"))
+    X = np.array(data).reshape(1, -1)
+
+    predictions = {}
+
+    for model_name, model in models.items():
+        try:
+            prediction = model.predict(X)
+            prediction = np.expm1(prediction)
+            predictions[model_name] = f"{prediction[0]:.6f} seconds"
+        except (ValueError, TypeError) as e:
+            raise PredictionError(model_name, e)
+
+    return predictions
 
 
 def generate_shap_plot(model_name, data):
@@ -105,6 +185,8 @@ def main():
     }
 
     # Hard code the input data for testing
+    # Hilti KH-EZ - Batch 1 - Texas concrete - Low torque
+
     # input_data = {
     #     "Pitch": 0.52,
     #     "Included Angle": 55,
@@ -116,6 +198,23 @@ def main():
     #     "Tip Taper": 0.0,
     #     "Torque Tool": 225,
     #     "Concrete": 5500,
+    #     "Undercut": 0.074,
+    #     "Gap": 0.074,
+    # }
+
+    # THDM - Batch 2 - Texas concrete - High torque
+
+    # input_data = {
+    #     "Pitch": 0.278,
+    #     "Included Angle": 40,
+    #     "Top Angle": 20,
+    #     "Serrations": 1,
+    #     "Length (C)": 3.5,
+    #     "Length (B)": 4,
+    #     "Embedment depth": 3.25,
+    #     "Tip Taper": 0.275,
+    #     "Torque Tool": 500,
+    #     "Concrete": 5965,
     #     "Undercut": 0.074,
     #     "Gap": 0.074,
     # }
@@ -135,6 +234,7 @@ def main():
         or embedment_depth == 0.0
         # or tip_taper == 0.0
         # or shank_diameter == 0.0
+        or concrete == 0.0
     ):
         st.error("Error: Please fill in all the input fields.")
         return
